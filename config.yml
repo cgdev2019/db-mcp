@@ -1,0 +1,22 @@
+server:
+  name: db-mcp
+  version: 1.0.0
+
+logging:
+  file: logs/db-mcp.log
+  level: info
+
+defaults:
+  max_pool_size: 5
+  connection_timeout_ms: 10000
+  statement_timeout_seconds: 30
+  max_rows: 1000
+
+# Pre-configured databases (optional)
+# databases:
+#   - db_id: my_postgres
+#     type: postgresql
+#     url: postgres://user:pass@localhost:5432/mydb
+#   - db_id: my_sqlite
+#     type: sqlite
+#     url: sqlite:file.db
