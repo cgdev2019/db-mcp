@@ -2,6 +2,7 @@ mod adapter;
 mod config;
 mod mcp;
 mod model;
+mod persist;
 mod registry;
 mod tools;
 mod validator;
@@ -45,6 +46,32 @@ async fn main() {
             ),
             Err(e) => tracing::error!(
                 "Failed to pre-register database '{}': {}",
+                db.db_id, e
+            ),
+        }
+    }
+
+    // Load persisted databases
+    for db in persist::load() {
+        if registry.has(&db.db_id).await {
+            continue; // already registered via config.yml
+        }
+        match registry
+            .register(
+                &db.db_id,
+                &db.db_type,
+                &db.url,
+                db.username.as_deref(),
+                db.password.as_deref(),
+            )
+            .await
+        {
+            Ok(info) => info!(
+                "Restored persisted database '{}' (type={})",
+                info.db_id, info.db_type
+            ),
+            Err(e) => tracing::error!(
+                "Failed to restore persisted database '{}': {}",
                 db.db_id, e
             ),
         }

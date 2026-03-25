@@ -1,3 +1,4 @@
+use crate::persist;
 use crate::registry::DatabaseRegistry;
 use crate::validator;
 use serde_json::{json, Value};
@@ -165,6 +166,16 @@ async fn tool_register_database(
     let password = args["password"].as_str();
 
     let info = registry.register(db_id, db_type, url, username, password).await?;
+
+    // Persist registration
+    let _ = persist::add(persist::PersistedDatabase {
+        db_id: db_id.to_string(),
+        db_type: info.db_type.clone(),
+        url: url.to_string(),
+        username: username.map(|s| s.to_string()),
+        password: password.map(|s| s.to_string()),
+    });
+
     Ok(json!({
         "success": true,
         "dbId": info.db_id,
@@ -179,6 +190,10 @@ async fn tool_unregister_database(
 ) -> anyhow::Result<Value> {
     let db_id = args["dbId"].as_str().unwrap_or_default();
     registry.unregister(db_id).await?;
+
+    // Remove from persistence
+    let _ = persist::remove(db_id);
+
     Ok(json!({
         "success": true,
         "message": format!("Database '{}' unregistered successfully", db_id)

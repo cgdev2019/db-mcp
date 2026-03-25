@@ -168,6 +168,11 @@ impl DatabaseRegistry {
         conns.values().map(|c| c.info.clone()).collect()
     }
 
+    pub async fn has(&self, db_id: &str) -> bool {
+        let conns = self.connections.read().await;
+        conns.contains_key(db_id)
+    }
+
     pub fn defaults(&self) -> &DefaultsConfig {
         &self.defaults
     }
